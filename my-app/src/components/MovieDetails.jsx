@@ -1,140 +1,53 @@
-import { useEffect, useRef, useState } from "react";
-import { useKey } from "../hooks/useKey";
-import StarRating from "./StarRating";
-import Loader from "./Loader";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
 
-export default function MovieDetails({
-    selectedID,
-    onCloseMovie,
-    onAddWatched,
-    watched,
-}) {
-    const [movie, setMovie] = useState({});
-    const [isLoading, setIsLoading] = useState(false);
-    const [userRating, setUserRating] = useState("");
+const MovieDetails = () => {
+  const { id } = useParams();
+  const [movie, setMovie] = useState(null);
 
-    const navigate = useNavigate();
-
-    const toMoviePage = () => {
-        navigate(`/movie/${selectedID}`, {
-            state: {
-                selectedID: selectedID,
-            },
-        });
+  useEffect(() => {
+    const fetchMovieDetails = async () => {
+      try {
+        // Replace 'YOUR_API_KEY' with your actual TMDb API key
+        const apiKey = '544a4042c04421e65ef15c092cd32e64';
+        const response = await axios.get(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=en-US`);
+        
+        // Check if the movie data was retrieved successfully
+        if (response.data) {
+          setMovie(response.data);
+        } else {
+          // Handle the case where the movie data is not available
+          console.error('Movie not found');
+        }
+      } catch (error) {
+        console.error('Error fetching movie details', error);
+      }
     };
 
-    const API_KEY = "544a4042c04421e65ef15c092cd32e64";
+    fetchMovieDetails();
+  }, [id]);
 
-    const countRef = useRef(0);
-
-    useEffect(
-        function () {
-            if (userRating) countRef.current++;
-        },
-        [userRating]
-    );
-
-    // const isWatched = watched.map((movie) => movie.id).includes(selectedID);
-    // const watchedUserRating = watched.find(
-    //     (movie) => movie.id === selectedID
-    // )?.userRating;
-
-    const {
-        title,
-        poster_path,
-        vote_average,
-        release_date,
-        overview,
-        runtime,
-    } = movie;
-
-    function handleAdd(newMovie) {
-        const newWatchedMovie = {
-            id: selectedID,
-            title,
-            release_date,
-            poster_path,
-            vote_average,
-            userRating,
-            overview,
-            runtime,
-            countRatingDecisions: countRef.current,
-        };
-        onAddWatched(newWatchedMovie);
-        // onCloseMovie();
-    }
-
-    useKey("Escape", onCloseMovie);
-
-    useEffect(
-        function () {
-            async function getMovieDetails() {
-                setIsLoading(true);
-                const res = await fetch(
-                    `https://api.themoviedb.org/3/movie/${selectedID}?api_key=${API_KEY}`
-                );
-                const data = await res.json();
-                console.log(data);
-                setMovie(data);
-                setIsLoading(false);
-            }
-            getMovieDetails();
-        },
-        [selectedID]
-    );
-
-    useEffect(
-        function () {
-            if (!title) return;
-            document.title = `Movie | ${title}`;
-
-            return function () {
-                document.title = "usePopcorn";
-            };
-        },
-        [title]
-    );
-
-    return (
-        <div className="details">
-            {isLoading ? (
-                <Loader />
-            ) : (
-                <>
-                    <header>
-                        <button className="btn-back" onClick={onCloseMovie}>
-                            &larr;
-                        </button>
-                        {/* <img
-                            src={`https://image.tmdb.org/t/p/w500${poster_path}`}
-                            alt={`Poster of ${movie}`}
-                        /> */}
-                        <div className="details-overview">
-                            <h2>{title}</h2>
-                            <p>{release_date}</p>
-                            <p>
-                                <span>⭐️</span>
-                                {vote_average} Average Rating
-                            </p>
-                        </div>
-                    </header>
-
-                    <section>
-                        <p>
-                            <em>{overview}</em>
-                        </p>
-                        <button
-                            className="btn-add"
-                            onClick={() => {
-                                toMoviePage();
-                            }}
-                        >
-                            Details
-                        </button>
-                    </section>
-                </>
-            )}
+  return (
+    <div>
+        <br/> <br/> <br/> <br/>
+      {movie ? (
+        <div>
+          <h2 className='text-white text-2xl font-bold'>{movie?.title}</h2>
+          <br/> <br/>
+          <img src={`https://image.tmdb.org/t/p/w500${movie?.poster_path}`} alt={movie?.title} />
+          <br/> <br/>
+          <p className='text-white text-sm'>Release Date: {movie?.release_date}</p>
+          <br/> <br/>
+          <p className='text-white text-sm'>Overview: {movie?.overview}</p>
+          <br/> <br/>
+          {/* Add more movie details as needed */}
         </div>
-    );
-}
+      ) : (
+        <p>Loading...</p>
+      )}
+    </div>
+  );
+};
+
+export default MovieDetails;

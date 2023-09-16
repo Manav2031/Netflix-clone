@@ -105,7 +105,7 @@ const Movie = ({ item }) => {
             <FaRegHeart className='absolute top-4 left-4 text-gray-300' />
           )}
         </p>
-        <Link to={`/movie-details/${item.id}`}>
+        <Link to={`/movie/${item.id}`}>
         <div className="flex justify-center items-center absolute inset-x-0 bottom-0 mb-4">
           <button className='bg-red-600 py-3 px-6 rounded font-bold text-white hover:bg-red-800'>
             See Details
